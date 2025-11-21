@@ -162,7 +162,7 @@ function App() {
   return (
     <div style={{textAlign: 'center', border: '3px solid black', borderRadius: '5px', width: '360px', margin: '0 auto', backgroundColor: 'white'}}>
       <div style={{borderBottom: '2px solid black', paddingBottom: '10px', display: 'flex', justifyContent: 'space-around', paddingTop: '10px'}}>
-        <span style={{fontSize: '30px', fontWeight: 'bold'}}>EmojiQuest</span>
+        <span style={{fontSize: '30px', fontWeight: 'bold'}}>EmojiGame</span>
         <span onClick={()=>{
           if (level > 1) {
             loadLevel(level-1);
