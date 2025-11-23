@@ -1,4 +1,3 @@
-import './App.css';
 import React, { useState, useEffect } from 'react';
 import levels from './levels';
 
@@ -190,11 +189,11 @@ function App() {
           <div>
             <div style={{fontSize: '30px', display: 'flex', justifyContent: 'space-around', borderBottom: '2px solid black'}}>
               <span>{score}✨</span>
-              <span>{lives}❤️</span>
-              <span>{food}🍲</span>
+              <span><span style={{backgroundColor: `${lives === 1 ? 'red':''}`, borderRadius: '15px', padding: '0px 5px 0px 5px'}}>{lives}</span>❤️</span>
+              <span><span style={{backgroundColor: `${food === 1 ? 'red':''}`, borderRadius: '15px', padding: '0px 5px 0px 5px'}}>{food}</span>🍲</span>
               <span>{['⛺','🏡'][dwelling]}</span>
             </div>
-            <div style={{textAlign: 'left', marginTop: '20px', padding: '10px 10px 10px 10px'}}>
+            <div style={{textAlign: 'left', marginTop: '20px', padding: '10px 10px 10px 10px', height: '260px'}}>
               <span style={{backgroundColor: burn?'rgb(255,0,0)':'#59ADFA', border: '2px solid #4688C4', borderRadius: '15px', cursor: 'pointer', fontSize: '40px', padding: '8px 0px 0px 0px'}}>
                 {stack.map((e,i)=>{
                   if (i < handLength || selectAnywhere){
