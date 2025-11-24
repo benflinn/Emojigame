@@ -40,13 +40,13 @@ const levels = [
       goalUnit: 'score',
       goalAmount: 5
     },{
-      title: 'Gorilla throw close emojis far away.',
+      title: 'Gorillas throw emoji far far away',
       initialStack: ['🎉','❤️','🦍','❤️','🔥','❤️','☢️','❤️','🎉','✨','🦍'],
       goalUnit: 'score',
       goalAmount: 3
     },{
       title: 'Some practice with gorilla.',
-      initialStack: ['🦍','🍄','🏡','☢️','✨','🥍','❤️','🥍','❤️','✨','🦍','🍄','❤️','🥍','🥍','☢️','🥍','💀','💀','💀','✨','✨','✨','🔥'],
+      initialStack: ['🦍','❤️','🍄','🏡','✨','☢️','🥍','❤️','🥍','❤️','✨','🦍','🍄','❤️','🥍','🥍','☢️','🥍','💀','💀','💀','✨','✨','✨','🔥'],
       goalUnit: 'score',
       goalAmount: 5
     },{

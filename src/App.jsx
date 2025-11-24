@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import levels from './levels';
+import { motion, AnimatePresence } from 'motion/react';
 
 let savedLevelLS = localStorage.getItem("savedLevelLS");
 let savedLevel;
@@ -9,18 +10,21 @@ if (savedLevelLS === null) { // if level has never been stored
   savedLevel = JSON.parse(savedLevelLS);
 }
 
-function App() {
-  
+function App() {  
   const [handLength, setHandLength] = useState(3);
   const [food, setFood] = useState(3);
   const [turnCount, setTurnCount] = useState(0);
   const [score, setScore] = useState(0);
   const [selectAnywhere, setSelectAnywhere] = useState(false);
   const [burn, setBurn] = useState(false);
+  const [gorillaActive, setGorillaActive] = useState(false);
   const [level, setLevel] = useState(savedLevel);
   let newStack = [];
-  levels[savedLevel-1].initialStack.forEach(i=>{
-    newStack.push(i);
+  levels[savedLevel-1].initialStack.forEach(e=>{
+    newStack.push({
+      emoji: e,
+      key: Math.random()
+    });
   })
   const [stack, setStack] = useState(newStack);
   const [dwelling, setDwelling] = useState(0);
@@ -34,15 +38,19 @@ function App() {
   }
 
   function loadLevel(newLevel) {
+    setStack([]);
     setLevel(newLevel);
     localStorage.setItem("savedLevelLS", newLevel);
     let newStack = [];
-    console.log(levels[newLevel-1].initialStack);
-    levels[newLevel-1].initialStack.forEach(i=>{
-      newStack.push(i);
+    levels[newLevel-1].initialStack.forEach(e=>{
+      newStack.push({
+      emoji: e,
+      key: Math.random()
+    });
     })
     setStack(newStack);
     setBurn(false);
+    setGorillaActive(false);
     setSelectAnywhere(false);
     setScore(0);
     setFood(3);
@@ -53,7 +61,7 @@ function App() {
   }
 
   function removeFromStack(i) {
-    let newStack = stack;
+    const newStack = [...stack];
     newStack.splice(i, 1);
     setStack(newStack);
   }
@@ -61,91 +69,94 @@ function App() {
   function clickEmoji(e,i) {
     let newFood = food;
     let newScore = score;
-    if (e === '🦍') {
+    if (gorillaActive) {
+      setSelectAnywhere(false);
+      setGorillaActive(false);
+      let newStack = [...stack];
+      let removed = newStack.splice(i, 1);
+      setStack([...newStack, ...removed]);
+    } else if (e.emoji === '🦍') {
       removeFromStack(i);
-      let hand = stack.slice(0, handLength);
-      let remainder = stack.slice(handLength);
-      setStack([...remainder, ...hand]);
-    } else if (e === '🏡') {
+      setGorillaActive(true);
+      setSelectAnywhere(true);
+    } else if (e.emoji === '🏡') {
       setDwelling(1);
       removeFromStack(i);
-    } else if (e === '🥓') {
+    } else if (e.emoji === '🥓') {
       removeFromStack(i);
       newFood += 6;
-    } else if (e === '❤️') {
-      let newStack = stack;
+    } else if (e.emoji === '❤️') {
+      let newStack = [...stack];
       if (burn) {
-        newStack[i] = '🥓';
+        newStack[i].emoji = '🥓';
       } else {
-        newStack[i] = '💔';
+        newStack[i].emoji = '💔';
         newFood += 2;
       }
       setStack(newStack);
-    } else if (e === '💔') {
-      let newStack = stack;
+    } else if (e.emoji === '💔') {
+      let newStack = [...stack];
       if (burn) {
-        newStack[i] = '🥓';
+        newStack[i].emoji = '🥓';
       } else {
         newStack.splice(i, 1);
         newFood += 2;
       }
       setStack(newStack);
-    } else if (e === '🎉') {
-      let newStack = stack;
+    } else if (e.emoji === '🎉') {
+      let newStack = [...stack];
       if (stack[i+1]) {
-        newStack.splice(i, 1, stack[i+1]);
-        newStack.splice(i, 0, stack[i+1]);
-        newStack.splice(i, 0, stack[i+1]);
+        newStack.splice(i, 1, {emoji: stack[i+1].emoji, key: Math.random()});
+        newStack.splice(i, 0, {emoji: stack[i+1].emoji, key: Math.random()});
+        newStack.splice(i, 0, {emoji: stack[i+1].emoji, key: Math.random()});
       } else {
-        newStack.splice(i, 1, '🎉');
-        newStack.splice(i, 0, '🎉');
-        newStack.splice(i, 0, '🎉');
+        newStack.splice(i, 1, {emoji: '🎉', key: Math.random()});
+        newStack.splice(i, 0, {emoji: '🎉', key: Math.random()});
+        newStack.splice(i, 0, {emoji: '🎉', key: Math.random()});
       }
       setStack(newStack);
-    } else if (e === '🔥') {
+    } else if (e.emoji === '🔥') {
       removeFromStack(i);
       setBurn(true);
-    } else if (e === '💀') {
-      setDeathReason('clicking on a skull kills you instantly. oops');
-    } else if (e === '🥍') {
+    } else if (e.emoji === '💀') {
+      setDeathReason('Clicking on a skull kills you instantly!');
+    } else if (e.emoji === '🥍') {
       removeFromStack(i);
       setSelectAnywhere(true);
-    } else if (e === '✨') {
+    } else if (e.emoji === '✨') {
       newScore++;
       removeFromStack(i);
-    } else if (e === '🍄') {
+    } else if (e.emoji === '🍄') {
       removeFromStack(i);
       setHandLength(handLength + 1);
     }
     if (dwelling === 0) {
       newFood -= 1;
-    } else if (dwelling === 1 && turnCount % 2 === 0) {
-      newFood -= 1;
+    } else if (dwelling === 1) {
+      newFood -= 0.5;
     }
 
     setFood(newFood);
     setScore(newScore);
     setTurnCount(turnCount + 1);
     
-    if (selectAnywhere && e !== '🔥' && e !== '🥍') {
+    if (selectAnywhere && e.emoji !== '🔥' && e.emoji !== '🥍') {
       setSelectAnywhere(false);
     }
-    if (burn && e !== '🥍') {
+    if (burn && e.emoji !== '🥍') {
       setBurn(false);
     }
   }
  
-  let lives = stack.filter(x=>x === '❤️' || x === '💔').length;
+  let lives = stack.filter(x=>x.emoji === '❤️' || x.emoji === '💔').length;
 
   useEffect(() => {
 
     // check for death
     if (!deathReason) {
       stack.forEach((x,i)=>{
-        if (i < handLength) {
-          if (x === '☢️') {
-            setDeathReason('You died from radiation poisoning.');
-          }
+        if (i < handLength && x.emoji === '☢️') {
+          setDeathReason('You died from radiation poisoning.');
         }
       })
       if (food < 1) {
@@ -193,20 +204,50 @@ function App() {
               <span><span style={{backgroundColor: `${food === 1 ? 'red':''}`, borderRadius: '15px', padding: '0px 5px 0px 5px'}}>{food}</span>🍲</span>
               <span>{['⛺','🏡'][dwelling]}</span>
             </div>
-            <div style={{textAlign: 'left', marginTop: '20px', padding: '10px 10px 10px 10px', height: '260px'}}>
-              <span style={{backgroundColor: burn?'rgb(255,0,0)':'#59ADFA', border: '2px solid #4688C4', borderRadius: '15px', cursor: 'pointer', fontSize: '40px', padding: '8px 0px 0px 0px'}}>
-                {stack.map((e,i)=>{
-                  if (i < handLength || selectAnywhere){
-                    return(<span style={{position: 'relative'}} onClick={()=>clickEmoji(e,i)}>{e}</span>)
-                  }
-                })}
+            <div style={{textAlign: 'left', margin: '5px 0px 0px 0px', height: '300px'}}>
+              <span style={{backgroundColor: burn ? 'rgb(255,0,0)' : gorillaActive ? 'black' : '#59ADFA', border: '2px solid #4688C4', borderRadius: '15px', cursor: 'pointer', fontSize: '40px', minHeight: '56px'}}>
+                <AnimatePresence initial={false} mode="sync">
+                  {stack.map((e,i)=>{
+                    if (i < handLength || selectAnywhere){
+                      return (
+                        <motion.span
+                          key={e.key}
+                          layout
+                          whileHover={{ scale: 1.3 }}
+                          initial={{ opacity: 1, scale: 0.1, y: 0 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ type: 'spring', stiffness: 1000, damping: 100 }}
+                          style={{position: 'relative', display: 'inline-block', margin: '0 6px', fontSize: '35px'}}
+                          onClick={()=>clickEmoji(e,i)}
+                        >
+                          {e.emoji}
+                        </motion.span>
+                      )
+                    }
+                    return null;
+                  })}
+                </AnimatePresence>
               </span>
-              <span>
-                {stack.map((e,i)=>{
-                  if (i >= handLength && selectAnywhere === false){
-                    return(<span style={{fontSize: '40px', position: 'relative'}}>{e}</span>)
-                  }
-                })}
+              <span style={{marginTop: '12px'}}>
+                <AnimatePresence initial={false} mode="sync">
+                  {stack.map((e,i)=>{
+                    if (i >= handLength && selectAnywhere === false){
+                      return (
+                        <motion.span
+                          key={e.key}
+                          layout
+                          initial={{ opacity: 0, scale: 0.1, y: 0 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ type: 'spring', stiffness: 1000, damping: 100 }}
+                          style={{fontSize: '40px', position: 'relative', margin: '0 6px', display: 'inline-block'}}
+                        >
+                          {e.emoji}
+                        </motion.span>
+                      )
+                    }
+                    return null;
+                  })}
+                </AnimatePresence>
               </span>
             </div>
           </div>:<div>
